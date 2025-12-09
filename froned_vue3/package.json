@@ -64,6 +64,7 @@
     "@dcloudio/uni-mp-xhs": "3.0.0-alpha-3081220230802001",
     "@dcloudio/uni-quickapp-webview": "3.0.0-alpha-3081220230802001",
     "@dcloudio/uni-ui": "^1.5.8",
+    "@tweenjs/tween.js": "^25.0.0",
     "@types/three": "^0.181.0",
     "@vant/weapp": "^1.11.7",
     "axios": "^1.10.0",

@@ -64,18 +64,6 @@
         "selectedIconPath": "static/images/tab/directory.png"
       },
       {
-        "pagePath": "pages/cart/CartPage",
-        "text": "购物车",
-        "iconPath": "static/images/tab/directory.png",
-        "selectedIconPath": "static/images/tab/directory.png"
-      },
-      {
-        "pagePath": "pages/favourite/FavouritePage",
-        "text": "收藏",
-        "iconPath": "static/images/tab/directory.png",
-        "selectedIconPath": "static/images/tab/directory.png"
-      },
-      {
         "pagePath": "pages/user/UserPage",
         "text": "我的",
         "iconPath": "static/images/tab/my.png",
