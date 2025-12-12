@@ -14,28 +14,10 @@
       }
     },
     {
-      "path": "pages/cart/CartPage",
-      "style": {
-        "navigationBarTitleText": "购物车"
-      }
-    },
-    {
-      "path": "pages/favourite/FavouritePage",
-      "style": {
-        "navigationBarTitleText": "收藏"
-      }
-    },
-    {
       "path": "pages/user/UserPage",
       "style": {
         "navigationBarTitleText": "个人中心",
         "navigationStyle": "custom"
-      }
-    },
-    {
-      "path": "pages/order/OrderSuccessPage",
-      "style": {
-        "navigationBarTitleText": "下单成功"
       }
     }
   ],
@@ -47,7 +29,7 @@
   },
   "tabBar": {
     "color": "#999999",
-    "selectedColor": "#FF6B00",
+    "selectedColor": "#0096E0",
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [

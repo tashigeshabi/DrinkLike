@@ -50,7 +50,7 @@
                     "univerify" : {},
                     "apple" : {},
                     "weixin" : {
-                        "appid" : "wx91e727a2d93e0e4c",
+                        "appid" : "wx5407f0428c1ca819",
                         "UniversalLinks" : ""
                     }
                 }
@@ -61,7 +61,7 @@
     "quickapp" : {},
     /* 小程序特有相关 */
     "mp-weixin" : {
-        "appid" : "",
+        "appid" : "wx5407f0428c1ca819",
         "setting" : {
             "urlCheck" : false
         },

@@ -4,101 +4,120 @@
     <view class="search-header">
       <view class="search-input">
         <text class="search-icon">🔍</text>
-        <text class="placeholder">搜索商品</text>
+        <text class="placeholder">搜索店铺或商品</text>
       </view>
     </view>
 
     <view class="content-box">
-      <!-- 左侧分类 -->
+      <!-- 左侧店铺分类 -->
       <scroll-view scroll-y class="left-menu">
         <view
-          v-for="(item, index) in categories"
-          :key="index"
+          v-for="(shop, index) in appStore.shops"
+          :key="shop.id"
           class="menu-item"
           :class="{ active: currentCategory === index }"
           @click="switchCategory(index)"
         >
-          <text>{{ item.name }}</text>
+          <text>{{ shop.name }}</text>
         </view>
       </scroll-view>
 
-      <!-- 右侧商品 -->
+      <!-- 右侧商品列表 -->
       <scroll-view scroll-y class="right-content" :scroll-top="scrollTop">
-        <view class="category-title">{{ categories[currentCategory].name }}</view>
+        <view class="category-title" v-if="currentShop">{{ currentShop.name }}</view>
 
-        <view class="product-list">
+        <view class="product-list" v-if="currentShop">
           <view
             class="product-item"
-            v-for="product in categories[currentCategory].products"
-            :key="product.id"
+            v-for="drink in currentShop.drinks"
+            :key="drink.id"
+            @click="showDetail(drink)"
           >
-            <view class="product-img"></view>
+            <image class="product-img" :src="drink.image" mode="aspectFill"></image>
             <view class="product-info">
-              <text class="name">{{ product.name }}</text>
-              <text class="desc">{{ product.description }}</text>
+              <text class="name">{{ drink.name }}</text>
+              <text class="desc">{{ drink.description }}</text>
               <view class="price-row">
-                <text class="price">¥{{ product.price }}</text>
-                <view class="add-cart-btn" @click="addToCart(product)">选规格</view>
+                <!-- 价格已隐藏 -->
+                <!-- <text class="price">¥{{ drink.price }}</text> -->
               </view>
             </view>
           </view>
         </view>
       </scroll-view>
     </view>
+
+    <!-- 详情弹窗 (Replaced by Component) -->
+    <DrinkDetailCard
+      v-if="selectedDrink"
+      :drink="selectedDrink"
+      :shop-name="getShopName(selectedDrink.shopId)"
+      :is-favorite="isFavorite"
+      @close="closeDetail"
+      @toggle-favorite="toggleFavorite"
+      @want-to-drink="wantToDrink"
+    />
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useAppStore } from '@/stores/app'
+import type { Drink } from '@/types'
+import DrinkDetailCard from '@/components/DrinkDetailCard.vue'
+
+const appStore = useAppStore()
 
 const currentCategory = ref(0)
 const scrollTop = ref(0)
+const selectedDrink = ref<Drink | null>(null)
 
-const categories = ref([
-  {
-    name: '人气热销',
-    products: [
-      { id: '101', name: '超大桶水果茶', price: 24, description: '1000ml超大容量，喝到爽' },
-      { id: '102', name: '满杯红柚', price: 18, description: '精选红柚，酸甜可口' },
-    ],
-  },
-  {
-    name: '当季新品',
-    products: [
-      { id: '201', name: '生椰拿铁', price: 19, description: '厚椰乳+浓缩咖啡' },
-      { id: '202', name: '冰吸生椰', price: 16, description: '清凉薄荷感' },
-    ],
-  },
-  {
-    name: '鲜果茶',
-    products: [
-      { id: '301', name: '多肉葡萄', price: 28, description: '手工剥皮，果肉丰富' },
-      { id: '302', name: '芝士草莓', price: 26, description: '新鲜草莓打制' },
-    ],
-  },
-  {
-    name: '醇香奶茶',
-    products: [
-      { id: '401', name: '珍珠奶茶', price: 12, description: '经典永不过时' },
-      { id: '402', name: '布丁奶茶', price: 13, description: '整颗布丁在里面' },
-    ],
-  },
-  {
-    name: '芝士奶盖',
-    products: [{ id: '501', name: '芝士绿茶', price: 15, description: '咸香芝士+清爽绿茶' }],
-  },
-])
+const currentShop = computed(() => {
+  return appStore.shops[currentCategory.value]
+})
+
+const isFavorite = computed(() => {
+  if (!selectedDrink.value) return false
+  return appStore.isFavorite(selectedDrink.value.id)
+})
+
+const getShopName = (shopId: string) => {
+  const shop = appStore.shops.find((s) => s.id === shopId)
+  return shop ? shop.name : ''
+}
 
 const switchCategory = (index: number) => {
   currentCategory.value = index
-  scrollTop.value = 0 // 切换分类回到顶部
+  scrollTop.value = 0
 }
 
-const addToCart = (product: any) => {
-  uni.showToast({
-    title: `已选择 ${product.name}`,
-    icon: 'none',
-  })
+const showDetail = (drink: Drink) => {
+  selectedDrink.value = drink
+}
+
+const closeDetail = () => {
+  selectedDrink.value = null
+}
+
+const toggleFavorite = () => {
+  if (selectedDrink.value) {
+    appStore.toggleFavorite(selectedDrink.value)
+    uni.showToast({
+      title: isFavorite.value ? '已添加到喜欢' : '已取消喜欢',
+      icon: 'none',
+    })
+  }
+}
+
+const wantToDrink = () => {
+  if (selectedDrink.value) {
+    appStore.addToHistory(selectedDrink.value)
+    uni.showToast({
+      title: '已添加到我想喝清单', // 实际上这里存入了 history，可以根据需求调整
+      icon: 'success',
+    })
+    closeDetail()
+  }
 }
 </script>
 
@@ -108,16 +127,22 @@ const addToCart = (product: any) => {
   display: flex;
   flex-direction: column;
   background-color: #fff;
+
+  /* Doraemon Theme Colors */
+  --doraemon-blue: #0096e0;
+  --doraemon-red: #e70012;
+  --doraemon-yellow: #ffc600;
+  --doraemon-white: #ffffff;
 }
 
 .search-header {
   padding: 10px 16px;
-  background-color: #fff;
-  border-bottom: 1px solid #f0f0f0;
+  background-color: var(--doraemon-blue); /* Updated header background */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .search-input {
-  background-color: #f5f5f5;
+  background-color: #fff;
   height: 32px;
   border-radius: 16px;
   display: flex;
@@ -142,7 +167,7 @@ const addToCart = (product: any) => {
 
 .left-menu {
   width: 90px;
-  background-color: #f5f5f5;
+  background-color: #f0f8ff; /* Light blue tint */
   height: 100%;
 }
 
@@ -153,13 +178,15 @@ const addToCart = (product: any) => {
   justify-content: center;
   font-size: 14px;
   color: #666;
+  padding: 0 10px;
+  text-align: center;
 }
 
 .menu-item.active {
   background-color: #fff;
-  color: #333;
+  color: var(--doraemon-blue);
   font-weight: bold;
-  border-left: 4px solid #ff6b00;
+  border-left: 4px solid var(--doraemon-red); /* Red accent */
 }
 
 .right-content {
@@ -173,6 +200,11 @@ const addToCart = (product: any) => {
   padding: 12px 0;
   font-size: 14px;
   color: #666;
+  font-weight: bold;
+}
+
+.product-list {
+  padding-bottom: 20px;
 }
 
 .product-item {
@@ -186,6 +218,7 @@ const addToCart = (product: any) => {
   background-color: #eee;
   border-radius: 8px;
   margin-right: 10px;
+  border: 1px solid #e0e0e0;
 }
 
 .product-info {
@@ -205,6 +238,10 @@ const addToCart = (product: any) => {
   font-size: 12px;
   color: #999;
   margin-top: 4px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .price-row {
@@ -216,14 +253,9 @@ const addToCart = (product: any) => {
 .price {
   font-size: 18px;
   font-weight: bold;
-  color: #ff6b00;
+  color: var(--doraemon-red); /* Red price */
 }
 
-.add-cart-btn {
-  padding: 4px 12px;
-  background-color: #ff6b00;
-  color: #fff;
-  font-size: 12px;
-  border-radius: 12px;
-}
+/* 详情弹窗样式 */
+/* Styles moved to @/components/DrinkDetailCard.vue */
 </style>
